@@ -1,35 +1,36 @@
 import os
-import requests
-import time
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import telebot
 
-TOKEN = os.environ.get("BOT_TOKEN")
+# Simple dummy server to keep Render Web Service happy with an open port
+class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Megenaga Bot is Running!")
 
-# Delete Webhook first
-requests.get(f"https://api.telegram.org/bot{TOKEN}/deleteWebhook")
-print("Webhook deleted. Starting Telegram listener on Render...")
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(('0.0.0.0', port), SimpleHTTPRequestHandler)
+    server.serve_forever()
 
-offset = 0
-while True:
-    try:
-        url = f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset={offset}&timeout=10"
-        res = requests.get(url).json()
-        
-        for update in res.get("result", []):
-            offset = update["update_id"] + 1
-            msg = update.get("message", {})
-            chat_id = msg.get("chat", {}).get("id")
-            text = msg.get("text", "")
-            
-            print(f"Received message: '{text}' from {chat_id}")
-            
-            if chat_id:
-                reply = "📦 እንኳን ወደ መገናኛ ሎጅስቲክስ ቦት በሰላም መጡ!\n\n1. 🚛 ተሽከርካሪ ለመመዝገብ\n2. 📦 እቃ ለመመዝገብ"
-                send_url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-                payload = {"chat_id": chat_id, "text": reply}
-                requests.post(send_url, json=payload)
-                print(f"Successfully replied to {chat_id}!")
-                
-    except Exception as e:
-        print(f"Error: {e}")
-        
-    time.sleep(1)
+# Start dummy server in background thread
+threading.Thread(target=run_dummy_server, daemon=True).start()
+
+# Telegram Bot Setup
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+bot = telebot.TeleBot(BOT_TOKEN)
+
+try:
+    bot.remove_webhook()
+    print("Webhook deleted successfully.")
+except Exception as e:
+    print(f"Error removing webhook: {e}")
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "እንኳን ወደ መገናኛ ቦት በደህና መጡ! / Welcome to Megenaga Bot!")
+
+print("Starting Telegram listener on Render...")
+bot.infinity_polling()
