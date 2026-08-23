@@ -4,7 +4,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import telebot
 
 # Get Token from Render Environment Variables or direct string backup
-TOKEN = os.environ.get('BOT_TOKEN', '8237883909:AAErjE-UpZeZzjdMhISD6lFAoVSf7KaHQrs')
+TOKEN = os.environ.get('BOT_TOKEN', '8973955022:AAEqz4VvLwDWnBUX2jy7BDrHOk9PlZ7Ef_k')
 bot = telebot.TeleBot(TOKEN)
 
 # Simple HTTP Server for Render Port Binding
