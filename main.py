@@ -33,4 +33,4 @@ def send_welcome(message):
     bot.reply_to(message, "እንኳን ወደ መገናኛ ቦት በደህና መጡ! / Welcome to Megenaga Bot!")
 
 print("Starting Telegram listener on Render...")
-bot.infinity_polling()
+bot.infinity_polling(skip_pending=True)
